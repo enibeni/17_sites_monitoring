@@ -17,10 +17,11 @@ def load_urls4check(path):
 
 def is_server_respond_with_200(url):
     try:
-        r = requests.get(url)
-    except requests.exceptions.RequestException as e:
-        sys.exit(e)
-    return r.ok
+        response_code = requests.get(url).status_code
+    except requests.exceptions.RequestException:
+        response_code = None
+        return response_code
+    return response_code
 
 
 def get_domain_expiration_date(domain_name):
@@ -64,16 +65,20 @@ if __name__ == '__main__':
     if not urls4check:
         exit("file not found")
     for url in urls4check:
+        server_respond_status = is_server_respond_with_200(url)
+        if not server_respond_status:
+            print("error getting {} status".format(url))
+        domain_expiration_date = get_domain_expiration_date(url)
+        domain_payment_status = is_domain_prepaid_more_than_for_a_month(domain_expiration_date)
         print(
-            "{} respond with 200: {}".format(
+            "{} respond status: {}".format(
                 url,
-                is_server_respond_with_200(url)
+                server_respond_status
             )
         )
-        domain_expiration_date = get_domain_expiration_date(url)
         print(
             "{} prepaid more than for a month: {}".format(
                 url,
-                is_domain_prepaid_more_than_for_a_month(domain_expiration_date)
+                domain_payment_status
             )
         )

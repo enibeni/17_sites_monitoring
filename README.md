@@ -19,7 +19,7 @@ Example of script launch on Linux, Python 3.5:
 ```bash
 $ python check_sites_health.py
 
-http://www.vk.com respond with 200: True
+http://www.vk.com respond status: 200
 http://www.vk.com prepaid more than for a month: True
 ```
 
