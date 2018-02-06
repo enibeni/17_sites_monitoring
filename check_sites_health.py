@@ -2,26 +2,26 @@ import requests
 import argparse
 import whois
 import datetime
-import sys
+from datetime import timedelta
 import os
 
 
 def load_urls4check(path):
     if not os.path.exists(path):
         return None
-    with open(path, encoding="utf=8") as file:
+    with open(path) as file:
         text = file.read()
         urls_list = text.split("\n")
     return urls_list
 
 
-def is_server_respond_with_200(url):
+def get_server_respond_code(url):
     try:
         response_code = requests.get(url).status_code
+        return response_code
     except requests.exceptions.RequestException:
         response_code = None
         return response_code
-    return response_code
 
 
 def get_domain_expiration_date(domain_name):
@@ -30,19 +30,14 @@ def get_domain_expiration_date(domain_name):
     return expiration_date
 
 
-def is_domain_prepaid_more_than_for_a_month(expiration_date):
+def is_domain_prepaid(expiration_date, prepaid_for_days=30):
     today = datetime.datetime.today()
     if expiration_date:
         delta = expiration_date - today
     else:
         return None
-    month_forward_date = datetime.datetime(
-        today.year,
-        today.month+1,
-        today.day
-    )
-    domain_prepaid_time = today + delta
-    if month_forward_date < domain_prepaid_time:
+    expiration_time = timedelta(days=prepaid_for_days)
+    if expiration_time < delta:
         return True
 
 
@@ -57,7 +52,7 @@ def get_input_argument_parser():
     )
     return parser
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     parser = get_input_argument_parser()
     args = parser.parse_args()
     filepath = args.file
@@ -65,11 +60,11 @@ if __name__ == '__main__':
     if not urls4check:
         exit("file not found")
     for url in urls4check:
-        server_respond_status = is_server_respond_with_200(url)
+        server_respond_status = get_server_respond_code(url)
         if not server_respond_status:
             print("error getting {} status".format(url))
         domain_expiration_date = get_domain_expiration_date(url)
-        domain_payment_status = is_domain_prepaid_more_than_for_a_month(domain_expiration_date)
+        domain_payment_status = is_domain_prepaid(domain_expiration_date)
         print(
             "{} respond status: {}".format(
                 url,
