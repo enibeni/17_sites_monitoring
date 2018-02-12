@@ -30,15 +30,20 @@ def get_domain_expiration_date(domain_name):
     return expiration_date
 
 
-def is_domain_prepaid(expiration_date, prepaid_for_days=30):
-    today = datetime.datetime.today()
-    if expiration_date:
-        delta = expiration_date - today
-    else:
-        return None
-    expiration_time = timedelta(days=prepaid_for_days)
-    if expiration_time < delta:
-        return True
+def is_domain_prepaid(expiration_dates, prepaid_for_days=30):
+    if type(expiration_dates) is not list:
+        expiration_dates = [expiration_dates]
+
+    for date in expiration_dates:
+        today = datetime.datetime.today()
+        if date:
+            delta = date - today
+        else:
+            return None
+        expiration_time = timedelta(days=prepaid_for_days)
+        if expiration_time > delta:
+            return False
+    return True
 
 
 def get_input_argument_parser():
@@ -46,8 +51,7 @@ def get_input_argument_parser():
     parser.add_argument(
         "-f",
         "--file",
-        required=False,
-        default="urls_to_check.txt",
+        required=True,
         help="Path to input file with urls"
     )
     return parser
@@ -63,8 +67,8 @@ if __name__ == "__main__":
         server_respond_status = get_server_respond_code(url)
         if not server_respond_status:
             print("error getting {} status".format(url))
-        domain_expiration_date = get_domain_expiration_date(url)
-        domain_payment_status = is_domain_prepaid(domain_expiration_date)
+        domain_expiration_dates = get_domain_expiration_date(url)
+        domain_payment_status = is_domain_prepaid(domain_expiration_dates)
         print(
             "{} respond status: {}".format(
                 url,
