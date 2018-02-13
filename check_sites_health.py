@@ -2,7 +2,6 @@ import requests
 import argparse
 import whois
 import datetime
-from datetime import timedelta
 import os
 
 
@@ -20,30 +19,28 @@ def get_server_respond_code(url):
         response_code = requests.get(url).status_code
         return response_code
     except requests.exceptions.RequestException:
-        response_code = None
-        return response_code
+        pass
 
 
 def get_domain_expiration_date(domain_name):
-    domain_info = whois.query(domain_name)
+    domain_info = whois.whois(domain_name)
     expiration_date = domain_info.expiration_date
     return expiration_date
 
 
-def is_domain_prepaid(expiration_dates, prepaid_for_days=30):
-    if type(expiration_dates) is not list:
-        expiration_dates = [expiration_dates]
+def is_domain_prepaid(expiration_date, prepaid_for_days=30):
+    if type(expiration_date) is list:
+        expiration_date = expiration_date[0]
 
-    for date in expiration_dates:
-        today = datetime.datetime.today()
-        if date:
-            delta = date - today
-        else:
-            return None
-        expiration_time = timedelta(days=prepaid_for_days)
-        if expiration_time > delta:
-            return False
-    return True
+    today = datetime.datetime.today()
+    if expiration_date:
+        delta = expiration_date - today
+    else:
+        return None
+    if delta.days > prepaid_for_days:
+        return delta.days
+    else:
+        return 0
 
 
 def get_input_argument_parser():
@@ -68,7 +65,7 @@ if __name__ == "__main__":
         if not server_respond_status:
             print("error getting {} status".format(url))
         domain_expiration_dates = get_domain_expiration_date(url)
-        domain_payment_status = is_domain_prepaid(domain_expiration_dates)
+        prepaid_days = is_domain_prepaid(domain_expiration_dates)
         print(
             "{} respond status: {}".format(
                 url,
@@ -76,8 +73,8 @@ if __name__ == "__main__":
             )
         )
         print(
-            "{} prepaid more than for a month: {}".format(
+            "{} prepaid for {} days".format(
                 url,
-                domain_payment_status
+                prepaid_days
             )
         )

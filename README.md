@@ -19,7 +19,7 @@ Example of script launch on Linux, Python 3.5:
 $ python check_sites_health.py -f urls_to_check.txt
 
 http://www.vk.com respond status: 200
-http://www.vk.com prepaid more than for a month: True
+http://www.vk.com prepaid for 280 days
 ```
 
 # Project Goals
