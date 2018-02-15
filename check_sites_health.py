@@ -25,22 +25,18 @@ def get_server_respond_code(url):
 def get_domain_expiration_date(domain_name):
     domain_info = whois.whois(domain_name)
     expiration_date = domain_info.expiration_date
+    if type(expiration_date) is list:
+        expiration_date = expiration_date[0]
     return expiration_date
 
 
-def is_domain_prepaid(expiration_date, prepaid_for_days=30):
-    if type(expiration_date) is list:
-        expiration_date = expiration_date[0]
-
+def is_domain_prepaid(expiration_date, days_count):
     today = datetime.datetime.today()
     if expiration_date:
         delta = expiration_date - today
     else:
         return None
-    if delta.days > prepaid_for_days:
-        return delta.days
-    else:
-        return 0
+    return delta.days > days_count
 
 
 def get_input_argument_parser():
@@ -51,12 +47,21 @@ def get_input_argument_parser():
         required=True,
         help="Path to input file with urls"
     )
+    parser.add_argument(
+        "-d",
+        "--days",
+        type=int,
+        required=False,
+        help="Count of days to check prepaid status for",
+        default=30
+    )
     return parser
 
 if __name__ == "__main__":
     parser = get_input_argument_parser()
     args = parser.parse_args()
     filepath = args.file
+    days_count = args.days
     urls4check = load_urls4check(filepath)
     if not urls4check:
         exit("file not found")
@@ -65,7 +70,7 @@ if __name__ == "__main__":
         if not server_respond_status:
             print("error getting {} status".format(url))
         domain_expiration_dates = get_domain_expiration_date(url)
-        prepaid_days = is_domain_prepaid(domain_expiration_dates)
+        is_prepaid = is_domain_prepaid(domain_expiration_dates, days_count)
         print(
             "{} respond status: {}".format(
                 url,
@@ -73,8 +78,9 @@ if __name__ == "__main__":
             )
         )
         print(
-            "{} prepaid for {} days".format(
+            "{} prepaid for period of {} days: {}".format(
                 url,
-                prepaid_days
+                days_count,
+                is_prepaid
             )
         )

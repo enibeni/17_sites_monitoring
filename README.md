@@ -4,22 +4,23 @@ Check site for positive response and domain payment status.
 
 # Set up
 
-Use pip to intall dependencies
+Use pip to install dependencies
 ```bash
 pip install -r requirements.txt
 ```
 
 # Quickstart
 
-Run this script with Python 3.x. As an requierd parameter -f, you shold specify file with list of urls to check.
+Run this script with Python 3.x. As an required parameter -f, you should specify file with list of urls to check.
+As an optional parameter -d, you can specify the amount of days to check domain prepaid status for.
 
 Example of script launch on Linux, Python 3.5:
 
 ```bash
-$ python check_sites_health.py -f urls_to_check.txt
+$ python check_sites_health.py -f urls_to_check.txt -d 90
 
-http://www.vk.com respond status: 200
-http://www.vk.com prepaid for 280 days
+https://www.github.com respond status: 200
+https://www.github.com prepaid for period of 90 days: True
 ```
 
 # Project Goals
